@@ -22,7 +22,7 @@ from .serializers import (
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [AllowAny]
     
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()

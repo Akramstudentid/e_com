@@ -1,13 +1,5 @@
 from django.db import models
-
-class Category(models.Model):
-    name = models.CharField(max_length=255)
-    keywords = models.CharField(max_length=255, blank=True)
-    type = models.CharField(max_length=50, blank=True)
-
-    def __str__(self):
-        return self.name
-
+from django.conf import settings
 from django.db import models
 
 class Category(models.Model):
@@ -48,6 +40,12 @@ class Offer(models.Model):
         ('occasional', 'Occasional'),
         ('first_time', 'First Time'),
     )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+        )
 
     title = models.CharField(max_length=255)
     offer_type = models.CharField(max_length=20, choices=OFFER_TYPES)
@@ -92,3 +90,4 @@ class Login(models.Model):
 
     def __str__(self):
         return self.username
+    
