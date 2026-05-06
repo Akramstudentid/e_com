@@ -25,6 +25,9 @@ class CartView(APIView):
         serializer = CartSerializer(cart)
         return Response(serializer.data)
 
+    def post(self, request):
+        return AddToCartView().post(request)
+
 
 
 @extend_schema(request=AddToCartSerializer)
@@ -205,3 +208,78 @@ class CheckoutView(APIView):
             "discount": discount,
             "final_price": final_price
         })
+
+
+class PlaceOrderView(APIView):
+    """
+    Place an order from cart items.
+    This view creates an Order and OrderItems from CartItems,
+    then clears the cart.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            cart = Cart.objects.get(user=request.user)
+        except Cart.DoesNotExist:
+            return Response(
+                {"error": "Cart not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        items = CartItem.objects.filter(cart=cart)
+
+        if not items.exists():
+            return Response(
+                {"error": "Cart is empty"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Calculate totals
+        total_price = sum(
+            item.product.offer_price * item.quantity 
+            for item in items
+        )
+        
+        # Apply coupon if provided
+        coupon_code = request.data.get('coupon_code')
+        discount_amount = 0
+        final_price = total_price
+
+        if coupon_code:
+            try:
+                coupon = Coupon.objects.get(code=coupon_code, active=True)
+                discount_amount = (coupon.discount_percent / 100) * total_price
+                final_price = total_price - discount_amount
+            except Coupon.DoesNotExist:
+                return Response(
+                    {"error": "Invalid coupon code"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        # Create order
+        order = Order.objects.create(
+            user=request.user,
+            total_price=total_price,
+            discount_amount=discount_amount,
+            final_price=final_price
+        )
+
+        # Create order items from cart items
+        for item in items:
+            OrderItem.objects.create(
+                order=order,
+                product=item.product,
+                quantity=item.quantity
+            )
+
+        # Clear cart
+        items.delete()
+
+        return Response({
+            "order_id": order.id,
+            "total_price": float(order.total_price),
+            "discount_amount": float(order.discount_amount),
+            "final_price": float(order.final_price),
+            "message": "Order placed successfully"
+        }, status=status.HTTP_201_CREATED)

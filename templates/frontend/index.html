@@ -1,0 +1,558 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Course Selling System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'frontend/app.css' %}" />
+    <style>
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      .gradient-hover:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <header class="sticky top-0 z-40 bg-white shadow-lg">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div
+              class="gradient-primary w-10 h-10 rounded-lg flex items-center justify-center"
+            >
+              <span class="text-white font-bold text-lg">CS</span>
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-gray-900">Course Store</h1>
+              <p class="text-xs text-gray-600">Learning products & offers</p>
+            </div>
+          </div>
+
+          <nav class="hidden md:flex items-center space-x-1">
+            <button
+              class="tab is-active px-4 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition"
+              data-view="catalog"
+            >
+              Catalog
+            </button>
+            <button
+              class="tab px-4 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition"
+              data-view="cart"
+            >
+              Cart
+            </button>
+            <button
+              class="tab px-4 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition"
+              data-view="account"
+            >
+              Account
+            </button>
+            <button
+              class="tab px-4 py-2 rounded-lg font-medium text-gray-700 hover:bg-gray-100 transition"
+              data-view="admin"
+              hidden
+            >
+              Admin
+            </button>
+          </nav>
+
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <p class="text-sm font-medium text-gray-900" id="sessionLabel">
+                Guest
+              </p>
+              <button
+                id="logoutButton"
+                class="text-xs text-red-600 hover:text-red-800 font-medium"
+                hidden
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- CATALOG VIEW -->
+      <section id="catalogView" class="view is-active">
+        <div class="mb-12">
+          <div class="gradient-primary rounded-2xl overflow-hidden shadow-xl">
+            <div class="px-6 sm:px-12 py-12 sm:py-16">
+              <h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+                Find, price, and enroll in courses
+              </h2>
+              <p class="text-white/90 text-lg mb-8 max-w-2xl">
+                Browse our collection of expert-led courses. Sign in to manage
+                your cart and unlock exclusive admin features.
+              </p>
+              <div class="flex flex-wrap gap-4">
+                <button
+                  class="primary-button bg-white text-purple-600 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition"
+                  data-view-target="account"
+                >
+                  Sign in
+                </button>
+                <button
+                  class="secondary-button bg-white/20 text-white hover:bg-white/30 px-6 py-3 rounded-lg font-semibold transition"
+                  data-refresh="courses"
+                >
+                  Refresh catalog
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-lg shadow p-6 text-center">
+              <p class="text-gray-600 text-sm">Total Stock</p>
+              <strong id="heroStock" class="text-3xl text-purple-600"
+                >--</strong
+              >
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 text-center">
+              <p class="text-gray-600 text-sm">Best Price</p>
+              <strong id="heroPrice" class="text-3xl text-purple-600"
+                >--</strong
+              >
+            </div>
+            <div class="bg-white rounded-lg shadow p-6 text-center">
+              <p class="text-gray-600 text-sm">Active Courses</p>
+              <strong id="heroCourses" class="text-3xl text-purple-600"
+                >--</strong
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Search Courses</label
+              >
+              <input
+                id="searchInput"
+                type="search"
+                placeholder="Enter course name..."
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Filter Category</label
+              >
+              <input
+                id="categoryInput"
+                type="search"
+                placeholder="Enter category..."
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+            <div class="flex items-end">
+              <button
+                id="filterButton"
+                class="w-full gradient-primary text-white font-semibold py-2 rounded-lg gradient-hover transition"
+              >
+                Apply Filter
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="courseGrid"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          aria-live="polite"
+        ></div>
+      </section>
+
+      <!-- CART VIEW -->
+      <section id="cartView" class="view">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8">
+          Your Shopping Cart
+        </h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div class="lg:col-span-2">
+            <div
+              id="cartList"
+              class="bg-white rounded-lg shadow-lg p-6"
+              aria-live="polite"
+            ></div>
+          </div>
+
+          <div>
+            <div
+              id="cartSummary"
+              class="bg-white rounded-lg shadow-lg p-6 sticky top-24"
+            ></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ACCOUNT VIEW (LOGIN/REGISTER) -->
+      <section id="accountView" class="view">
+        <div class="max-w-md mx-auto">
+          <div class="mb-4 flex items-center space-x-2">
+            <div class="flex-1 h-px bg-gray-200"></div>
+            <p class="text-center text-sm font-medium text-gray-600">
+              Authentication
+            </p>
+            <div class="flex-1 h-px bg-gray-200"></div>
+          </div>
+
+          <!-- LOGIN FORM -->
+          <form
+            id="loginForm"
+            class="glass-effect rounded-2xl shadow-xl p-8 mb-8"
+          >
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Welcome Back</h2>
+
+            <div class="space-y-4 mb-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Username</label
+                >
+                <input
+                  name="username"
+                  type="text"
+                  autocomplete="username"
+                  required
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  placeholder="Enter your username"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Password</label
+                >
+                <input
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  placeholder="Enter your password"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="w-full gradient-primary text-white font-bold py-3 rounded-lg gradient-hover transition mb-4"
+            >
+              Login
+            </button>
+
+            <p class="text-center text-sm text-gray-600">
+              Don't have an account?
+              <button
+                type="button"
+                class="text-purple-600 font-semibold hover:underline"
+                onclick="
+                  document
+                    .querySelector('#registerForm')
+                    .scrollIntoView({ behavior: 'smooth' })
+                "
+              >
+                Register
+              </button>
+            </p>
+          </form>
+
+          <!-- REGISTER FORM -->
+          <form
+            id="registerForm"
+            class="glass-effect rounded-2xl shadow-xl p-8"
+          >
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">
+              Create Account
+            </h2>
+
+            <div class="space-y-4 mb-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Username</label
+                >
+                <input
+                  name="username"
+                  type="text"
+                  autocomplete="username"
+                  required
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  placeholder="Choose a username"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Email</label
+                >
+                <input
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  required
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  placeholder="your@email.com"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Location (Optional)</label
+                >
+                <input
+                  name="live_location"
+                  type="text"
+                  placeholder="City or area"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Password</label
+                >
+                <input
+                  name="password"
+                  type="password"
+                  autocomplete="new-password"
+                  required
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  placeholder="Create a strong password"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Confirm Password</label
+                >
+                <input
+                  name="confirm_password"
+                  type="password"
+                  autocomplete="new-password"
+                  required
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  placeholder="Confirm your password"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="w-full gradient-primary text-white font-bold py-3 rounded-lg gradient-hover transition"
+            >
+              Create Account
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ADMIN VIEW -->
+      <section id="adminView" class="view">
+        <div class="mb-8">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-3xl font-bold text-gray-900">Admin Dashboard</h2>
+            <button
+              class="gradient-primary text-white px-6 py-2 rounded-lg font-semibold gradient-hover transition"
+              data-refresh="admin"
+            >
+              Load Dashboard
+            </button>
+          </div>
+        </div>
+
+        <div
+          id="dashboardCards"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
+        ></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Add Course Form -->
+          <form id="courseForm" class="bg-white rounded-lg shadow-lg p-8">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">Add New Course</h3>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Course Name</label
+                >
+                <input
+                  name="name"
+                  type="text"
+                  required
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Description</label
+                >
+                <textarea
+                  name="description"
+                  rows="4"
+                  required
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                ></textarea>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >MRP</label
+                  >
+                  <input
+                    name="mrp"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    required
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Offer Price</label
+                  >
+                  <input
+                    name="offer_price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Stock</label
+                  >
+                  <input
+                    name="stock"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value="1"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <div class="flex items-end">
+                  <label class="flex items-center space-x-2">
+                    <input
+                      name="available"
+                      type="checkbox"
+                      checked
+                      class="rounded"
+                    />
+                    <span class="text-sm font-medium text-gray-700"
+                      >Available</span
+                    >
+                  </label>
+                </div>
+              </div>
+              <button
+                type="submit"
+                class="w-full gradient-primary text-white font-bold py-2 rounded-lg gradient-hover transition"
+              >
+                Add Course
+              </button>
+            </div>
+          </form>
+
+          <!-- Add Offer Form -->
+          <form id="offerForm" class="bg-white rounded-lg shadow-lg p-8">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">Add Promotion</h3>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Course ID</label
+                >
+                <input
+                  name="course"
+                  type="number"
+                  min="1"
+                  required
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Offer Type</label
+                >
+                <select
+                  name="offer_type"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="regular">Regular</option>
+                  <option value="festival">Festival</option>
+                  <option value="first_time">First Time</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2"
+                  >Discount %</label
+                >
+                <input
+                  name="percentage"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  required
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Start Date</label
+                  >
+                  <input
+                    name="start_date"
+                    type="date"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >End Date</label
+                  >
+                  <input
+                    name="end_date"
+                    type="date"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                class="w-full gradient-primary text-white font-bold py-2 rounded-lg gradient-hover transition"
+              >
+                Add Offer
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div
+      id="toast"
+      class="fixed bottom-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg transform opacity-0 translate-y-full transition-all duration-300"
+      role="status"
+      aria-live="polite"
+    ></div>
+
+    <script src="{% static 'frontend/app.js' %}" defer></script>
+  </body>
+</html>

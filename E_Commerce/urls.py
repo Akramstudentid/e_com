@@ -16,18 +16,25 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+from django.views.generic import TemplateView
 
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from Courses.views import dashboard_view, buy_course_view
 
 urlpatterns = [
+    path('', TemplateView.as_view(template_name='frontend/index.html'), name='frontend'),
     path('admin/', admin.site.urls),
     path('api/', include('Courses.urls')),
     path('api/Accounts/', include('Accounts.urls')),
+    path('api/accounts/', include('Accounts.urls')),
     path('api/Cart/', include('Cart.urls')),
+    path('api/cart/', include('Cart.urls')),
+    path('api/dashboard/', dashboard_view, name='dashboard'),
+    path('api/order/', buy_course_view, name='buy-course'),
 
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),

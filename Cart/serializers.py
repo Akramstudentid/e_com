@@ -3,7 +3,7 @@ from .models import CartItem,Cart, Coupon, Order, OrderItem
 
 class CartItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
-    price = serializers.FloatField(source='product.price', read_only=True)
+    price = serializers.FloatField(source='product.offer_price', read_only=True)
     class Meta:
         model = CartItem
         fields = ['id', 'product', 'quantity', 'product_name', 'price']
@@ -15,8 +15,15 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = ['id', 'user', 'created_at', 'items']
 class AddToCartSerializer(serializers.Serializer):
-    product_id = serializers.IntegerField()
+    product_id = serializers.IntegerField(required=False)
+    course = serializers.IntegerField(required=False)
     quantity = serializers.IntegerField(default=1)
+
+    def validate(self, attrs):
+        attrs['product_id'] = attrs.get('product_id') or attrs.get('course')
+        if not attrs['product_id']:
+            raise serializers.ValidationError("product_id or course is required")
+        return attrs
 
 class ApplyCouponSerializer(serializers.Serializer):
     code = serializers.CharField(max_length=50)
@@ -34,7 +41,7 @@ class RemoveCartItemSerializer(serializers.Serializer):
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
-    price = serializers.FloatField(source='product.price', read_only=True)
+    price = serializers.FloatField(source='product.offer_price', read_only=True)
 
     class Meta:
         model = OrderItem
